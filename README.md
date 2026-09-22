@@ -56,19 +56,7 @@ Designed with human-paced interactions, adjacent seat prioritization, real-time 
 
 ---
 
-## 📂 Project Structure
 
-```text
-├── manifest.json                  # Manifest V3 extension configuration
-├── index.html                     # Popup UI entry point
-├── assets/
-│   ├── popup-C-4qXFbC.js         # React 18 popup application bundle
-│   └── popup-Bl4wzrQn.css         # Modern dark-theme stylesheet
-├── background/
-│   └── serviceWorker.js          # MV3 Background service worker & state coordinator
-└── content/
-    └── content.js                # DOM automation engine & intelligent seat selector
-```
 
 ---
 
@@ -76,15 +64,11 @@ Designed with human-paced interactions, adjacent seat prioritization, real-time 
 
 Follow these steps to load this extension into Google Chrome:
 
-### Step 1: Download or Clone the Repository
+### Step 1: Download  the Repository
 
-Clone the repository with git:
 
-```bash
-git clone https://github.com/your-username/RailwayBooking.git
-```
 
-_(or download as a ZIP file from GitHub and extract it)_
+ download as a ZIP file from GitHub and extract it
 
 ### Step 2: Open Chrome Extensions
 
@@ -102,7 +86,7 @@ _(or download as a ZIP file from GitHub and extract it)_
 ### Step 4: Load the Extension
 
 1. Click the **Load unpacked** button in the top-left corner.
-2. Select the folder containing `manifest.json` (the `dist` folder or root project folder).
+2. Select the folder named **dist**.
 3. Click **Select Folder**.
 
 ### Step 5: Pin to Toolbar
@@ -134,14 +118,7 @@ _(or download as a ZIP file from GitHub and extract it)_
 
 ---
 
-## 🛠️ Tech Stack
 
-- **Platform:** Google Chrome Extension (Manifest V3)
-- **Frontend:** React 18, Lucide Icons, CSS Custom Properties
-- **Background:** Chrome Extension Service Worker (`chrome.runtime`, `chrome.storage.local`)
-- **Automation:** Native DOM Mutation Observer & Async Polling Engine
-
----
 
 ## ⚠️ Disclaimer
 
@@ -149,6 +126,18 @@ This tool is created for educational and personal convenience purposes to assist
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the [MIT License](LICENSE).
+No license file is included in the repository. Add one before public distribution if you want to define reuse terms.
+
+## 📬 Contact
+
+For questions or support, contact the project maintainer at [manasim1213@gmail.com].
+
+---
+
+<div align="center">
+   <img src="https://img.icons8.com/color/96/party-baloons.png" alt="Party"/>
+  
+   <h2 style="color:#e74c3c;">Made with ❤️*-*. <br>Be With Nasim, Be joss, Be awesome!</h2>
+</div>
