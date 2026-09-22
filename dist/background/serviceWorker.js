@@ -1,0 +1,181 @@
+(function () {
+  "use strict";
+  var t = ((T) => (
+      (T.START_AUTOMATION = "START_AUTOMATION"),
+      (T.STOP_AUTOMATION = "STOP_AUTOMATION"),
+      (T.PAUSE_AUTOMATION = "PAUSE_AUTOMATION"),
+      (T.RESUME_AUTOMATION = "RESUME_AUTOMATION"),
+      (T.GET_STATE = "GET_STATE"),
+      (T.STATE_UPDATED = "STATE_UPDATED"),
+      (T.LOG_ADDED = "LOG_ADDED"),
+      (T.PING = "PING"),
+      (T.PONG = "PONG"),
+      T
+    ))(t || {}),
+    n = ((T) => (
+      (T.IDLE = "IDLE"),
+      (T.CONFIGURED = "CONFIGURED"),
+      (T.WAITING_FOR_BOOKING_TIME = "WAITING_FOR_BOOKING_TIME"),
+      (T.STARTING = "STARTING"),
+      (T.HOME_PAGE = "HOME_PAGE"),
+      (T.SELECTING_ROUTE = "SELECTING_ROUTE"),
+      (T.SELECTING_DATE = "SELECTING_DATE"),
+      (T.SEARCHING = "SEARCHING"),
+      (T.SEARCH_RESULTS = "SEARCH_RESULTS"),
+      (T.FINDING_TRAIN = "FINDING_TRAIN"),
+      (T.SELECTING_TRAIN = "SELECTING_TRAIN"),
+      (T.SELECTING_CLASS = "SELECTING_CLASS"),
+      (T.WAITING_FOR_SEAT_MAP = "WAITING_FOR_SEAT_MAP"),
+      (T.ANALYZING_SEATS = "ANALYZING_SEATS"),
+      (T.SELECTING_SEATS = "SELECTING_SEATS"),
+      (T.CONTINUE = "CONTINUE"),
+      (T.USER_VERIFICATION_REQUIRED = "USER_VERIFICATION_REQUIRED"),
+      (T.OTP_REQUIRED = "OTP_REQUIRED"),
+      (T.PAYMENT_REQUIRED = "PAYMENT_REQUIRED"),
+      (T.CAPTCHA_REQUIRED = "CAPTCHA_REQUIRED"),
+      (T.COMPLETED = "COMPLETED"),
+      (T.ERROR = "ERROR"),
+      T
+    ))(n || {});
+  const s = {
+    fromStation: "Dhaka",
+    toStation: "Kishorganj",
+    journeyDate: new Date().toISOString().split("T")[0],
+    targetTrain: "KISHOREGANJ EXPRESS",
+    seatClass: "S_CHAIR",
+    seatCount: 2,
+    seatMode: "adjacent",
+    actionDelay: 50,
+    allowFallback: !0,
+    bookingTime: "",
+  };
+  const SETTINGS_STORAGE_KEY = "bd_railway_booking_settings_v3";
+  let S = { ...s, seatCount: 1 },
+    I = n.IDLE,
+    i = "Ready",
+    _,
+    A = [
+      {
+        id: "sw-init",
+        timestamp: new Date().toLocaleTimeString("en-GB"),
+        message: "Service Worker initialized",
+        type: "info",
+      },
+    ];
+  try {
+    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get([SETTINGS_STORAGE_KEY], (res) => {
+        if (res && res[SETTINGS_STORAGE_KEY]) S = { ...s, ...res[SETTINGS_STORAGE_KEY] };
+      });
+    }
+  } catch (err) {}
+  function O() {
+    const T = {
+      type: t.STATE_UPDATED,
+      payload: { state: I, statusText: i, logs: A, settings: S, seatDetails: _ },
+    };
+    chrome.runtime.sendMessage(T, () => {
+      chrome.runtime.lastError;
+    });
+  }
+  function a(T, o) {
+    const E = {
+      id: Math.random().toString(36).substring(2, 9),
+      timestamp: new Date().toLocaleTimeString("en-GB"),
+      message: T,
+      type: o,
+    };
+    (A.push(E),
+      A.length > 100 && A.shift(),
+      chrome.runtime.sendMessage({ type: t.LOG_ADDED, payload: E }, () => {
+        chrome.runtime.lastError;
+      }));
+  }
+  chrome.runtime.onMessage.addListener((T, o, E) => {
+    var R;
+    if (T.type === t.GET_STATE) {
+      try {
+        chrome.storage.local.get([SETTINGS_STORAGE_KEY], (res) => {
+          const currentSettings =
+            res && res[SETTINGS_STORAGE_KEY] ? { ...S, ...res[SETTINGS_STORAGE_KEY] } : S;
+          E({ state: I, statusText: i, logs: A, settings: currentSettings, seatDetails: _ });
+        });
+        return !0;
+      } catch (err) {
+        return (E({ state: I, statusText: i, logs: A, settings: S, seatDetails: _ }), !0);
+      }
+    }
+    if (T.type === t.START_AUTOMATION) {
+      const r = ((R = T.payload) == null ? void 0 : R.settings) || s;
+      return (
+        (S = r),
+        (() => {
+          try {
+            chrome.storage.local.set({ [SETTINGS_STORAGE_KEY]: r });
+          } catch (err) {}
+        })(),
+        (I = n.STARTING),
+        (i = `Starting automation for ${r.fromStation} → ${r.toStation}`),
+        (_ = void 0),
+        a(`Command: Start Autobot (${r.fromStation} → ${r.toStation})`, "info"),
+        O(),
+        chrome.tabs.query({ active: !0, currentWindow: !0 }, (N) => {
+          const e = N[0];
+          e != null &&
+            e.id &&
+            chrome.tabs.sendMessage(
+              e.id,
+              { type: t.START_AUTOMATION, payload: { settings: r } },
+              () => {
+                chrome.runtime.lastError &&
+                  chrome.scripting
+                    .executeScript({ target: { tabId: e.id }, files: ["content/content.js"] })
+                    .then(() => {
+                      setTimeout(() => {
+                        chrome.tabs.sendMessage(
+                          e.id,
+                          { type: t.START_AUTOMATION, payload: { settings: r } },
+                          () => {
+                            chrome.runtime.lastError;
+                          },
+                        );
+                      }, 100);
+                    })
+                    .catch(() => {
+                      a(
+                        "Content script connection note: Ensure you are on eticket.railway.gov.bd and refresh the page (F5).",
+                        "warning",
+                      );
+                    });
+              },
+            );
+        }),
+        E({ success: !0 }),
+        !0
+      );
+    }
+    if (T.type === t.STOP_AUTOMATION)
+      return (
+        (I = n.IDLE),
+        (i = "Automation stopped by user"),
+        a("Command: Stop Autobot", "warning"),
+        O(),
+        chrome.tabs.query({ active: !0, currentWindow: !0 }, (r) => {
+          var N;
+          (N = r[0]) != null &&
+            N.id &&
+            chrome.tabs.sendMessage(r[0].id, { type: t.STOP_AUTOMATION }, () => {
+              chrome.runtime.lastError;
+            });
+        }),
+        E({ success: !0 }),
+        !0
+      );
+    T.type === t.STATE_UPDATED &&
+      T.payload &&
+      (T.payload.state && (I = T.payload.state),
+      T.payload.statusText && (i = T.payload.statusText),
+      T.payload.seatDetails && (_ = T.payload.seatDetails),
+      O());
+  });
+})();
